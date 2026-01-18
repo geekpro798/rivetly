@@ -34,9 +34,12 @@ jobs:
         run: npm install
 
       - name: Build Webview (React)
-        # Assuming the root package.json has a 'sync' script that builds web and copies to extension
-        # If not, adjust to: cd rivetly-web && npm run build && cd .. && npm run copy:to-ext
-        run: npm run sync
+        run: |
+          cd rivetly-web
+          npm install
+          npm run build
+          cd ..
+          npm run copy:dist # Ensure the built files are copied to the extension directory
 
       - name: Setup VSCE
         run: npm install -g @vscode/vsce
