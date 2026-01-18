@@ -47,7 +47,7 @@
         {
           "id": "rivetly-sidebar-container",
           "title": "Rivetly",
-          "icon": "icon.svg"
+          "icon": "assets/sidebar-icon.svg"
         }
       ]
     },
