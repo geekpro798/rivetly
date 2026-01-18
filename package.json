@@ -1,0 +1,8 @@
+{
+  "name": "rivetly-workspace",
+  "scripts": {
+    "build:web": "cd rivetly-web && npm run build",
+    "copy:dist": "rm -rf rivetly-extension/dist && cp -r rivetly-web/dist rivetly-extension/",
+    "sync": "npm run build:web && npm run copy:dist"
+  }
+}

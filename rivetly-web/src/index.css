@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* 核心：禁止最外层滚动，防止布局飘走 */
+  html, body, #root {
+    height: 100vh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background-color: #0a0a0c;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-200 font-sans antialiased;
+  }
+}
+
+/* 方案：彻底隐藏侧边栏滚动条，保持精致感 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* 核心动画：切换模式时的文字渐显 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0.5;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-preview {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* 2. 侧边栏布局优化：确保 Rivetly v1.0.1 文本被正确处理 */
+.sidebar-footer-text {
+  @apply text-[10px] text-slate-700 mt-auto pt-6 border-t border-slate-900;
+}
+
+/* 3. 解决主预览区底部空白断层 */
+/* 确保你的 main 容器使用了 flex-1 且父级为 h-screen overflow-hidden */
+.preview-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+}
+
+/* 4. 代码块渐变动画：切换模板时文字显得更丝滑 */
+.animate-fill {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .rivet-border {
+    @apply border border-slate-800;
+  }
+
+  .rivet-shadow {
+    @apply shadow-[0_1px_2px_0_rgba(0, 0, 0, 0.5)];
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0.7;
+      transform: translateY(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
+  }
+}
+
+/* 统一背景色，消除色差导致的“缝隙感” */
+.bg-sidebar { background-color: #0a0a0c; }
+.bg-editor { background-color: #0d0d0f; }
+
+/* VS Code 插件环境适配 */
+body.vscode-light, body.vscode-dark {
+  /* 确保在插件里不会出现横向滚动条 */
+  overflow-x: hidden;
+  /* 适当缩小全局字号 */
+  font-size: 13px;
+}

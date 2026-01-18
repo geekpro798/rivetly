@@ -1,0 +1,64 @@
+{
+    "categories": [
+        {
+            "id": "performance",
+            "zh": "性能",
+            "en": "Performance",
+            "icon": "Zap"
+        },
+        {
+            "id": "security",
+            "zh": "安全",
+            "en": "Security",
+            "icon": "Shield"
+        },
+        {
+            "id": "workflow",
+            "zh": "工作流",
+            "en": "Workflow",
+            "icon": "GitMerge"
+        },
+        {
+            "id": "engineering",
+            "zh": "规范",
+            "en": "Engineering",
+            "icon": "Ruler"
+        }
+    ],
+    "templates": {
+        "performance": [
+            {
+                "label": {
+                    "zh": "性能：防抖与节流",
+                    "en": "Perf: Debounce & Throttle"
+                },
+                "prompt": "For high-frequency events (scroll, resize, input), always suggest Debounce or Throttle implementations to optimize performance."
+            },
+            {
+                "label": {
+                    "zh": "性能：懒加载优先",
+                    "en": "Perf: Lazy Loading"
+                },
+                "prompt": "Prioritize Code Splitting and Image Lazy-loading. Use dynamic imports for heavy components that are not in the initial viewport."
+            }
+        ],
+        "security": [
+            {
+                "label": {
+                    "zh": "安全：输入脱敏",
+                    "en": "Security: Sanitize Input"
+                },
+                "prompt": "Always sanitize user inputs before rendering to HTML or sending to DB to prevent XSS and SQL Injection."
+            }
+        ],
+        "engineering": [
+            {
+                "label": {
+                    "zh": "规范：JSDoc 覆盖",
+                    "en": "Standard: JSDoc Coverage"
+                },
+                "prompt": "Provide standard JSDoc comments for all exported functions, explaining every parameter and the specific return type."
+            }
+        ]
+    }
+}

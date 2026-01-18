@@ -1,0 +1,70 @@
+{
+  "name": "rivetly",
+  "displayName": "Rivetly - AI Rules Generator",
+  "description": "Professional AI rules and .cursorrules generator for Cursor, Windsurf, and Trae. Boost LLM coding quality with soulful prompts.",
+  "version": "0.1.0",
+  "publisher": "rivetly",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/rivetly.git"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "AI",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "cursor",
+    "cursorrules",
+    "windsurf",
+    "trae",
+    "prompt-engineering",
+    "ai-coding",
+    "claude",
+    "gpt-4",
+    "rules-generator",
+    "rivetly"
+  ],
+  "icon": "icon.svg",
+  "galleryBanner": {
+    "color": "#1e1e20",
+    "theme": "dark"
+  },
+  "activationEvents": [],
+  "main": "./extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package",
+    "build:vsix": "npm run build && vsce package -o rivetly-v0.1.vsix"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rivetly-sidebar-container",
+          "title": "Rivetly",
+          "icon": "icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "rivetly-sidebar-container": [
+        {
+          "type": "webview",
+          "id": "rivetly.webviewView",
+          "name": "Rivetly"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "rivetly.syncRules",
+        "title": "Rivetly: Sync Rules to Project"
+      }
+    ]
+  }
+}

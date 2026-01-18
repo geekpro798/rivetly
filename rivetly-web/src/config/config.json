@@ -1,0 +1,76 @@
+{
+    "modes": {
+        "feature": {
+            "id": "feature",
+            "role": "Full-stack Senior Architect (Efficiency & Scalability Focus)",
+            "goal": "Rapidly implement robust, scalable functional requirements.",
+            "recommendedConstraints": [
+                "continuity_memory",
+                "strict_ts"
+            ],
+            "rules": [
+                "Prioritize clean architecture and DRY principles.",
+                "Ensure all new features have error handling and basic logging."
+            ]
+        },
+        "testing": {
+            "id": "testing",
+            "role": "Lead QA Automation Engineer (Zero-Defect & Robustness Focus)",
+            "goal": "Ensure 100% reliability and comprehensive test coverage.",
+            "recommendedConstraints": [
+                "continuity_memory",
+                "strict_ts",
+                "no_deps"
+            ],
+            "rules": [
+                "Strictly follow the AAA (Arrange-Act-Assert) pattern.",
+                "Focus on edge cases, boundary conditions, and failure modes."
+            ]
+        },
+        "refactor": {
+            "id": "refactor",
+            "role": "Senior Refactoring Specialist (Clean Code & SOLID Focus)",
+            "goal": "Improve code structure and readability without changing external behavior.",
+            "recommendedConstraints": [
+                "continuity_memory",
+                "strict_ts",
+                "functional"
+            ],
+            "rules": [
+                "Reduce Cyclomatic Complexity (split functions > 25 lines)."
+            ]
+        }
+    },
+    "constraints": {
+        "continuity_memory": {
+            "label": "Continuity Memory",
+            "prompt": "Enable long-term context tracking and R2 snapshot syncing.",
+            "negative_prompt": "Do not lose track of previous architectural decisions or variable states."
+        },
+        "strict_ts": {
+            "label": "Strict TypeScript",
+            "prompt": "Enforce strict type checking, explicit return types, and interfaces.",
+            "negative_prompt": "Do not use 'any', implicit types, or ignore TypeScript compiler warnings."
+        },
+        "functional": {
+            "label": "Functional Pattern",
+            "prompt": "Use pure functions, immutability, and declarative patterns.",
+            "negative_prompt": "Avoid imperative loops (for/while), shared mutable state, and side effects."
+        },
+        "no_deps": {
+            "label": "No External Deps",
+            "prompt": "Prioritize native APIs and existing project utilities.",
+            "negative_prompt": "Do not suggest or install new npm packages for tasks solvable with built-in modules."
+        },
+        "concise": {
+            "label": "Concise Mode",
+            "prompt": "Provide direct code solutions with minimal explanation.",
+            "negative_prompt": "Avoid verbose prose, conversational filler, or repeating the user's instructions."
+        },
+        "zh_response": {
+            "label": "Chinese Response",
+            "prompt": "Ensure all explanations and comments are in Chinese.",
+            "negative_prompt": "Do not translate standard technical terms like 'React', 'Hook', 'State', or 'Props'."
+        }
+    }
+}
