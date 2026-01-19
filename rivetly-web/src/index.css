@@ -117,3 +117,172 @@ body.vscode-light, body.vscode-dark {
   /* 适当缩小全局字号 */
   font-size: 13px;
 }
+
+/* Compact Sync Button */
+.compact-sync-btn {
+  height: 28px; /* 显著缩小高度 */
+  padding: 0 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex; /* Ensure alignment */
+  align-items: center; /* Ensure alignment */
+  gap: 6px; /* Ensure alignment */
+}
+
+/* 1. 同步状态：橙色 (初始状态) */
+.compact-sync-btn.orange {
+  background-color: #f97316;
+  color: white;
+}
+
+/* 2. 更新状态：蓝色 (有差异时) */
+.compact-sync-btn.blue {
+  background-color: #007acc;
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 122, 204, 0.3);
+}
+
+/* 3. 已就绪状态：灰色 (一致时) */
+.compact-sync-btn.gray {
+  background-color: #333;
+  color: #888;
+  cursor: default;
+}
+
+/* 次级按钮 (Copy) */
+.secondary-icon-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #ccc;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  display: flex; /* Ensure alignment */
+  align-items: center; /* Ensure alignment */
+  justify-content: center; /* Ensure alignment */
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* Preview Structure */
+.preview-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  background-color: #0d0d0f; /* Or inherit from bg-slate-950 */
+}
+
+/* 预览区顶部工具条 */
+.preview-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(30, 30, 30, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: auto; /* Allow auto height based on content padding */
+  flex-shrink: 0;
+}
+
+.file-label {
+  font-size: 10px;
+  color: #64748b; /* text-slate-500 */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em; /* tracking-widest */
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-view {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 32px; /* px-8 py-6 */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  color: #cbd5e1; /* text-slate-300 */
+}
+
+
+/* 旋转动画 */
+.spin-icon {
+    display: inline-block;
+    transition: transform 0.5s ease;
+}
+.compact-sync-btn.blue:hover .spin-icon {
+    transform: rotate(180deg);
+}
+
+/* Rivetly Footer Styles */
+.rivetly-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.25); /* 稍微深于侧边栏背景 */
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 28px; /* 固定高度，形成状态栏感 */
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #666; /* 默认暗灰色 */
+}
+
+.version-tag {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+/* 状态绿色小圆点 */
+.status-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #333; /* 离线态 */
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.status-dot.active {
+  background-color: #4ec9b0; /* VS Code 经典的成功绿 */
+  box-shadow: 0 0 5px rgba(78, 201, 176, 0.5);
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.minimal-link {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.minimal-link:hover {
+  color: #f97316; /* 悬停切换为你品牌标志性的橙色 */
+}
+
+.separator {
+  color: #333;
+  font-size: 10px;
+  user-select: none;
+}

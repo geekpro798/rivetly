@@ -4,7 +4,6 @@ import ModeSwitcher from './ModeSwitcher';
 import config from '../config/config.json';
 import templates from '../config/templates.json';
 import { UI_TEXT } from '../config/i18n';
-import { generateFinalPrompt } from '../utils/adapter-engine';
 import { PLATFORMS, handleExport } from '../utils/platformManager';
 import { getVsCodeApi } from '../utils/vscode';
 
@@ -21,7 +20,23 @@ const getLabel = (field, currentLocale) => {
 
 const safeT = getLabel;
 
-export default function Sidebar({ mode: activeMode, setMode, selectedIds, toggleId, locale, showToast, customConstraints, addCustomRule, removeCustomRule, isNarrow }) {
+export default function Sidebar({ 
+    mode: activeMode, 
+    setMode, 
+    selectedIds, 
+    toggleId, 
+    locale, 
+    showToast, 
+    customConstraints, 
+    addCustomRule, 
+    removeCustomRule, 
+    isNarrow,
+    // Sync Props
+    isFileExist,
+    isDifferent,
+    previewContent,
+    currentPlatform
+}) {
     const [isAdding, setIsAdding] = React.useState(false);
     const [activeCategory, setActiveCategory] = React.useState(null);
     const [tempLabel, setTempLabel] = React.useState('');
@@ -32,30 +47,18 @@ export default function Sidebar({ mode: activeMode, setMode, selectedIds, toggle
     const t = UI_TEXT[locale] || UI_TEXT['en'];
 
     const handleNarrowExport = () => {
-        // Default to Cursor for quick export in narrow mode
-        const platform = 'cursor';
-        const currentPlatform = PLATFORMS['CURSOR'];
-        
-        const content = generateFinalPrompt({
-            mode: activeMode,
-            selectedIds,
-            customConstraints,
-            platform,
-            locale
-        });
-
         const vscode = getVsCodeApi();
 
         if (vscode) {
             vscode.postMessage({ 
-                command: 'updateRules', 
-                content: content, 
+                command: 'syncToRoot', 
+                text: previewContent, 
                 fileName: currentPlatform.file 
             });
             return;
         }
 
-        handleExport('CURSOR', { mode: activeMode, selectedIds, locale }, content, showToast);
+        handleExport(currentPlatform.id, { mode: activeMode, selectedIds, locale }, previewContent, showToast);
         
         setCopied(false);
         setTimeout(() => setCopied(true), 10);
@@ -323,126 +326,118 @@ export default function Sidebar({ mode: activeMode, setMode, selectedIds, toggle
                                                 {/* 将橙色圆点改为更柔和的呼吸灯效果，不带具体品牌名 */}
                                                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                                                 <span className="text-[9px] text-slate-500 font-medium uppercase tracking-tighter">
-                                                    {locale === 'zh' ? '记忆已存入本地快照' : 'Saved to local snapshot'}
+                                                    Rivetry Continuity
                                                 </span>
                                             </div>
                                         )}
                                     </div>
                                 );
                             })}
-
-                        {/* User Custom Constraints */}
-                        {customConstraints.map(rule => {
-                                const isSelected = selectedIds.includes(rule.id);
-
-                                // 动态标签查找：根据 prompt 反向查找模板，实时渲染当前语言的标签
-                                let displayLabel = rule.label;
-                                for (const category of Object.values(templates.templates)) {
-                                    const templateMatch = category.find(t => t.prompt === rule.prompt);
-                                    if (templateMatch && templateMatch.label) {
-                                        displayLabel = locale === 'zh' ? (templateMatch.label.zh || templateMatch.label.en) : templateMatch.label.en;
-                                        break;
-                                    }
-                                }
-
-                                return (
-                                    <div
-                                        key={rule.id}
-                                        onClick={() => toggleId(rule.id)}
-                                        className={`group cursor-pointer p-4 rounded-xl border border-dashed transition-all duration-200 relative ${isSelected
-                                            ? 'bg-orange-500/5 border-orange-500/30'
-                                            : 'bg-slate-800/20 border-slate-700/50 hover:border-slate-500/50'
-                                            }`}
-                                    >
-                                        {/* Hover 显现的删除按钮 */}
-                                        <button
-                                            className="absolute -top-2 -right-2 w-5 h-5 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setDeleteConfirmId(rule.id);
-                                            }}
+                        
+                        {/* Custom Constraints List */}
+                        {customConstraints.length > 0 && (
+                            <div className="pt-6 border-t border-slate-800/50">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">
+                                    {locale === 'zh' ? '自定义约束' : 'CUSTOM CONSTRAINTS'}
+                                </h4>
+                                <div className="space-y-3">
+                                    {customConstraints.map((rule) => (
+                                        <div 
+                                            key={rule.id}
+                                            className="group relative p-4 rounded-xl border border-slate-700/50 bg-slate-800/20 hover:border-slate-600 transition-all"
                                         >
-                                            <Icons.X size={10} />
-                                        </button>
-
-                                        {/* 删除确认气泡 */}
-                                        {deleteConfirmId === rule.id && (
-                                            <div className="absolute right-0 top-8 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl p-3 w-48 animate-in fade-in slide-in-from-top-2 duration-200">
-                                                <p className="text-[11px] text-slate-300 mb-3">
-                                                    {locale === 'zh' ? '确定要删除这个约束吗？' : 'Delete this constraint?'}
-                                                </p>
-                                                <div className="flex gap-2 justify-end">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setDeleteConfirmId(null);
-                                                        }}
-                                                        className="text-[10px] px-2 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
-                                                    >
-                                                        {locale === 'zh' ? '取消' : 'Cancel'}
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            removeCustomRule(rule.id);
-                                                            showToast(locale === 'zh' ? '已移除自定义约束' : 'Removed custom constraint');
-                                                            setDeleteConfirmId(null);
-                                                        }}
-                                                        className="text-[10px] px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition-colors font-bold"
-                                                    >
-                                                        {locale === 'zh' ? '删除' : 'Delete'}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-between items-start mb-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-slate-300">
-                                                    {safeT(displayLabel, locale)}
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="text-sm font-medium text-slate-300">
+                                                    {rule.label}
                                                 </span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${isSelected ? 'bg-orange-500' : 'bg-slate-700'}`}>
-                                                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 ease-in-out ${isSelected ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteConfirmId(rule.id);
+                                                        }}
+                                                        className="text-slate-500 hover:text-red-400 transition-colors"
+                                                    >
+                                                        <Icons.Trash2 size={14} />
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <p className="text-[10px] text-slate-500 italic leading-relaxed">
-                                            "{rule.prompt.length > 50 ? rule.prompt.substring(0, 50) + '...' : rule.prompt}"
-                                        </p>
-                                    </div>
-                                );
-                            })}
+                                            <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">
+                                                {rule.prompt}
+                                            </p>
 
-                        {/* Empty State / Placeholder */}
-                        {customConstraints.length === 0 && !isAdding && (
-                            <div
-                                onClick={() => setIsAdding(true)}
-                                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-800 rounded-xl hover:border-slate-700 transition-colors cursor-pointer group"
-                            >
-                                <Icons.Plus className="text-slate-600 group-hover:text-slate-400 mb-2 transition-colors" size={20} />
-                                <span className="text-[10px] text-slate-500 font-medium">
-                                    {locale === 'zh' ? '添加自定义约束' : 'Add Custom Constraint'}
-                                </span>
+                                            {/* 删除确认弹窗 */}
+                                            {deleteConfirmId === rule.id && (
+                                                <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-sm rounded-xl flex items-center justify-center gap-4 z-10 animate-in fade-in zoom-in-95 duration-200">
+                                                    <span className="text-xs text-slate-300 font-medium">
+                                                        {locale === 'zh' ? '确认删除?' : 'Confirm delete?'}
+                                                    </span>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeCustomRule(rule.id);
+                                                                setDeleteConfirmId(null);
+                                                            }}
+                                                            className="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded hover:bg-red-500/30 transition-colors"
+                                                        >
+                                                            {locale === 'zh' ? '删除' : 'Yes'}
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setDeleteConfirmId(null);
+                                                            }}
+                                                            className="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded hover:bg-slate-600 transition-colors"
+                                                        >
+                                                            {locale === 'zh' ? '取消' : 'No'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
                 </section>
-
-                {/* Sticky Export Button for Narrow Mode */}
-                {isNarrow && (
-                    <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/95 border-t border-slate-800 backdrop-blur-sm z-50">
-                        <button
-                            onClick={handleNarrowExport}
-                            className={`bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 ${isNarrow ? 'w-full py-3 text-base' : 'px-4 py-2 text-sm'}`}
-                        >
-                            {copied ? <Icons.Check size={18} /> : <Icons.Download size={18} />}
-                            {locale === 'zh' ? '导出到 .cursorrules' : 'Export to .cursorrules'}
-                        </button>
-                    </div>
-                )}
             </div>
+            
+            {/* Sticky Sync Button for Narrow Mode */}
+            {isNarrow && (
+                <div className="fixed bottom-0 left-0 right-0 p-3 bg-slate-950/95 border-t border-slate-800 backdrop-blur-sm z-50">
+                    <button
+                        onClick={handleNarrowExport}
+                        disabled={isFileExist && !isDifferent}
+                        className={`
+                            font-bold rounded-lg transition-all flex items-center justify-center gap-2 w-full py-2 text-sm shadow-lg
+                            ${!isFileExist 
+                                ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-orange-900/20' 
+                                : isDifferent 
+                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20' 
+                                    : 'bg-slate-800 text-slate-400 border border-slate-700 shadow-none cursor-not-allowed'}
+                        `}
+                    >
+                        {!isFileExist ? (
+                            <>
+                                <Icons.Zap size={16} />
+                                {locale === 'zh' ? '同步配置' : 'Sync Config'}
+                            </>
+                        ) : isDifferent ? (
+                            <>
+                                <Icons.RefreshCw size={16} className="spin-icon" />
+                                {locale === 'zh' ? '更新配置' : 'Update Config'}
+                            </>
+                        ) : (
+                            <>
+                                <Icons.Check size={16} className="text-[#4ec9b0]" />
+                                {locale === 'zh' ? '已同步' : 'Synced'}
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

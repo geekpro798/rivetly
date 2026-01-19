@@ -58,12 +58,45 @@ function activate(context) {
 
             webviewView.webview.html = getHtmlContent(context, webviewView.webview);
 
+            const updateFileStatus = (fileName) => {
+                const folders = vscode.workspace.workspaceFolders;
+                if (!folders) return;
+
+                const filePath = path.join(folders[0].uri.fsPath, fileName);
+                const exists = fs.existsSync(filePath);
+                let content = '';
+                
+                if (exists) {
+                    content = fs.readFileSync(filePath, 'utf-8');
+                }
+                
+                // 将结果推送到前端
+                webviewView.webview.postMessage({
+                    command: 'localFileContent',
+                    exists: exists,
+                    content: content,
+                    fileName: fileName
+                });
+            };
+
+            // 监听文件变化（新增、删除、修改），实时更新按钮状态
+            const watcher = vscode.workspace.createFileSystemWatcher('**/*');
+            watcher.onDidCreate(() => updateFileStatus('.cursorrules'));
+            watcher.onDidDelete(() => updateFileStatus('.cursorrules'));
+            watcher.onDidChange(() => updateFileStatus('.cursorrules'));
+
             // 核心交互：监听 Webview 消息
             webviewView.webview.onDidReceiveMessage(async (message) => {
                 switch (message.command) {
                     case 'webviewReady':
                         // 网页加载完了，现在扫描并发送旧规则
                         syncLocalRulesToWebview(webviewView);
+                        // 初始化时发送一次状态
+                        updateFileStatus('.cursorrules');
+                        break;
+                    
+                    case 'checkFile':
+                        updateFileStatus(message.fileName);
                         break;
 
                     case 'updateRules':
@@ -81,13 +114,19 @@ function activate(context) {
                         break;
 
                     case 'saveFile':
+                        // 检查文件名是否已经包含点号，避免双重后缀
+                        const baseName = message.fileName; // 例如 ".cursorrules"
+                        
                         const saveUri = await vscode.window.showSaveDialog({
                             defaultUri: vscode.Uri.file(path.join(
                                 vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
-                                message.fileName
+                                baseName
                             )),
-                            filters: { 'AI Rules': [message.fileName.split('.').pop()] }
+                            // 如果文件名本身已经包含了完整的扩展名，可以考虑置空 filters
+                            // 或者只保留一个不带点的后缀名
+                            filters: baseName.startsWith('.') ? {} : { 'AI Rules': [baseName.split('.').pop()] }
                         });
+
                         if (saveUri) {
                             fs.writeFileSync(saveUri.fsPath, message.text);
                             vscode.window.showInformationMessage(`💾 Saved to ${path.basename(saveUri.fsPath)}`);
@@ -111,6 +150,10 @@ function activate(context) {
                             vscode.window.showErrorMessage(`Sync failed: ${err.message}`);
                         }
                         break;
+
+                    case 'openLink':
+                        vscode.env.openExternal(vscode.Uri.parse(message.url));
+                        break;
                 }
             });
         }
@@ -118,6 +161,12 @@ function activate(context) {
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('rivetly.webviewView', provider)
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('rivetly.syncRules', () => {
+            // 这里可以触发同步逻辑
+        })
     );
 }
 

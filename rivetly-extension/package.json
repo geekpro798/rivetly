@@ -35,8 +35,10 @@
     "color": "#1e1e20",
     "theme": "dark"
   },
-  "activationEvents": [],
   "main": "./extension.js",
+  "activationEvents": [
+    "onView:rivetly.webviewView"
+  ],
   "scripts": {
     "vscode:prepublish": "npm run build",
     "build": "echo 'Build skipped'",

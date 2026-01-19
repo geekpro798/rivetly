@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Editor from './components/Editor';
+import RivetlyFooter from './components/RivetlyFooter';
 import { useResponsiveWidth } from './hooks/useResponsiveWidth';
 import { getVsCodeApi } from './utils/vscode';
+import { generateFinalPrompt } from './utils/adapter-engine';
+import { PLATFORMS } from './utils/platformManager';
 
 function App() {
   const { containerRef, isNarrow } = useResponsiveWidth(380);
@@ -23,8 +26,41 @@ function App() {
   const [selectedIds, setSelectedIds] = useState(() => getInitialState('rivetly_selectedIds', ['strict_ts']));
   const [customConstraints, setCustomConstraints] = useState(() => getInitialState('rivetly_customConstraints', []));
   const [hasRestored, setHasRestored] = useState(false);
+  
+  // Hoisted state for synchronization
+  const [activePlatform, setActivePlatform] = useState('CURSOR');
+  const [localFileContent, setLocalFileContent] = useState('');
+  const [isFileExist, setIsFileExist] = useState(false);
 
   const [toast, setToast] = useState({ message: '', visible: false });
+
+  // Derived state
+  const currentPlatform = PLATFORMS[activePlatform];
+
+  // Use useMemo for declarative rule generation (moved from Editor)
+  const previewContent = React.useMemo(() => {
+      return generateFinalPrompt({
+          mode,
+          selectedIds,
+          customConstraints,
+          platform: activePlatform.toLowerCase(),
+          locale
+      });
+  }, [mode, selectedIds, customConstraints, activePlatform, locale]);
+
+  // Core logic: Compare content
+  const isDifferent = localFileContent.trim() !== previewContent.trim();
+
+  // Trigger checkFile when platform changes
+  useEffect(() => {
+      const vscode = getVsCodeApi();
+      if (vscode) {
+          vscode.postMessage({
+              command: 'checkFile',
+              fileName: currentPlatform.file
+          });
+      }
+  }, [activePlatform, currentPlatform.file]);
 
   useEffect(() => {
     // 1. 定义消息处理函数
@@ -46,6 +82,12 @@ function App() {
         } catch (e) {
           console.error("恢复状态失败:", e);
         }
+      } else if (message.command === 'localFileContent') {
+          // Only update if the message corresponds to the current platform's file
+          if (message.fileName === currentPlatform.file) {
+              setIsFileExist(message.exists);
+              setLocalFileContent(message.content || '');
+          }
       }
     };
 
@@ -59,7 +101,7 @@ function App() {
     }
 
     return () => window.removeEventListener('message', handleMessage);
-  }, [locale]); // 添加 locale 依赖以正确显示 toast
+  }, [locale, currentPlatform.file]); // Add currentPlatform.file dependency
 
   // Persistence Effects
   React.useEffect(() => {
@@ -130,18 +172,16 @@ function App() {
             customConstraints={customConstraints} 
             addCustomRule={addCustomRule} 
             removeCustomRule={removeCustomRule} 
-            isNarrow={isNarrow} 
+            isNarrow={isNarrow}
+            // Sync Props
+            isFileExist={isFileExist}
+            isDifferent={isDifferent}
+            previewContent={previewContent}
+            currentPlatform={currentPlatform}
           />
         </div>
         {/* 底部状态栏 */}
-        <div className="flex-shrink-0 p-2 border-t border-slate-800 bg-[#0a0a0c]">
-           <div className="flex justify-between text-[10px] text-slate-500 px-2">
-              <span>Rivetly v0.1.0-beta</span>
-              <span className="flex items-center gap-1">
-                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Engine Active
-              </span>
-           </div>
-        </div>
+        <RivetlyFooter version="v0.1.0-beta" isEngineActive={true} />
       </aside>
 
       {/* 右侧 Main：核心修复区 */}
@@ -156,7 +196,14 @@ function App() {
                 selectedIds={selectedIds} 
                 customConstraints={customConstraints} 
                 locale={locale} 
-                showToast={showToast} 
+                showToast={showToast}
+                // Sync Props
+                activePlatform={activePlatform}
+                setActivePlatform={setActivePlatform}
+                previewContent={previewContent}
+                isFileExist={isFileExist}
+                isDifferent={isDifferent}
+                currentPlatform={currentPlatform}
               />
             </div>
           </div>
