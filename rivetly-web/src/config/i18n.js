@@ -61,6 +61,7 @@ export const UI_TEXT = {
         label_placeholder: "标签名称...",
         prompt_placeholder: "输入提示词约束...",
         add_btn: "添加",
-        cancel_btn: "取消"
+        cancel_btn: "取消",
+        sync_profile: "同步配置"
     }
 };

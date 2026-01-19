@@ -283,137 +283,137 @@ export default function Sidebar({ mode: activeMode, setMode, selectedIds, toggle
 
                         {/* Native Constraints */}
                         {Object.entries(config.constraints).map(([id, data]) => {
-                            const currentModeConfig = config.modes[activeMode];
-                            const isRecommended = currentModeConfig?.recommendedConstraints?.includes(id);
-                            const isSelected = selectedIds.includes(id);
+                                const currentModeConfig = config.modes[activeMode];
+                                const isRecommended = currentModeConfig?.recommendedConstraints?.includes(id);
+                                const isSelected = selectedIds.includes(id);
 
-                            // 安全获取文本，提供回退值
-                            const labelText = t.items?.[id] || safeT(data.label, locale) || id;
-                            const descText = t.items?.[`${id}_desc`] || (data.prompt ? (data.prompt.length > 60 ? data.prompt.substring(0, 60) + "..." : data.prompt) : "No description");
+                                // 安全获取文本，提供回退值
+                                const labelText = t.items?.[id] || safeT(data.label, locale) || id;
+                                const descText = t.items?.[`${id}_desc`] || (data.prompt ? (data.prompt.length > 60 ? data.prompt.substring(0, 60) + "..." : data.prompt) : "No description");
 
-                            return (
-                                <div
-                                    key={id}
-                                    onClick={() => toggleId(id)}
-                                    className={`group cursor-pointer p-4 rounded-xl border transition-all duration-200 ${isRecommended && !isSelected
-                                        ? 'bg-orange-500/5 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.03)]'
-                                        : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-500/50'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-slate-200">
-                                                {labelText}
-                                            </span>
-                                            {isRecommended && (
-                                                <span className="text-[8px] px-1.5 py-0.5 rounded-md bg-orange-500/20 text-orange-500 font-bold border border-orange-500/20">
-                                                    {locale === 'zh' ? '推荐' : 'REC'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${isSelected ? 'bg-orange-500' : 'bg-slate-700'}`}>
-                                            <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 ease-in-out ${isSelected ? 'translate-x-4' : 'translate-x-0'}`} />
-                                        </div>
-                                    </div>
-                                    <p className="text-[10px] text-slate-500 leading-relaxed opacity-80 group-hover:opacity-100">
-                                        {descText}
-                                    </p>
-                                    {id === 'continuity_memory' && isSelected && (
-                                        <div className="flex items-center gap-1.5 mt-2">
-                                            {/* 将橙色圆点改为更柔和的呼吸灯效果，不带具体品牌名 */}
-                                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                                            <span className="text-[9px] text-slate-500 font-medium uppercase tracking-tighter">
-                                                {locale === 'zh' ? '记忆已存入本地快照' : 'Saved to local snapshot'}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-
-                        {/* User Custom Constraints */}
-                        {customConstraints.map(rule => {
-                            const isSelected = selectedIds.includes(rule.id);
-
-                            // 动态标签查找：根据 prompt 反向查找模板，实时渲染当前语言的标签
-                            let displayLabel = rule.label;
-                            for (const category of Object.values(templates.templates)) {
-                                const templateMatch = category.find(t => t.prompt === rule.prompt);
-                                if (templateMatch && templateMatch.label) {
-                                    displayLabel = locale === 'zh' ? (templateMatch.label.zh || templateMatch.label.en) : templateMatch.label.en;
-                                    break;
-                                }
-                            }
-
-                            return (
-                                <div
-                                    key={rule.id}
-                                    onClick={() => toggleId(rule.id)}
-                                    className={`group cursor-pointer p-4 rounded-xl border border-dashed transition-all duration-200 relative ${isSelected
-                                        ? 'bg-orange-500/5 border-orange-500/30'
-                                        : 'bg-slate-800/20 border-slate-700/50 hover:border-slate-500/50'
-                                        }`}
-                                >
-                                    {/* Hover 显现的删除按钮 */}
-                                    <button
-                                        className="absolute -top-2 -right-2 w-5 h-5 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDeleteConfirmId(rule.id);
-                                        }}
+                                return (
+                                    <div
+                                        key={id}
+                                        onClick={() => toggleId(id)}
+                                        className={`group cursor-pointer p-4 rounded-xl border transition-all duration-200 ${isRecommended && !isSelected
+                                            ? 'bg-orange-500/5 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.03)]'
+                                            : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-500/50'
+                                            }`}
                                     >
-                                        <Icons.X size={10} />
-                                    </button>
-
-                                    {/* 删除确认气泡 */}
-                                    {deleteConfirmId === rule.id && (
-                                        <div className="absolute right-0 top-8 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl p-3 w-48 animate-in fade-in slide-in-from-top-2 duration-200">
-                                            <p className="text-[11px] text-slate-300 mb-3">
-                                                {locale === 'zh' ? '确定要删除这个约束吗？' : 'Delete this constraint?'}
-                                            </p>
-                                            <div className="flex gap-2 justify-end">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDeleteConfirmId(null);
-                                                    }}
-                                                    className="text-[10px] px-2 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
-                                                >
-                                                    {locale === 'zh' ? '取消' : 'Cancel'}
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        removeCustomRule(rule.id);
-                                                        showToast(locale === 'zh' ? '已移除自定义约束' : 'Removed custom constraint');
-                                                        setDeleteConfirmId(null);
-                                                    }}
-                                                    className="text-[10px] px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition-colors font-bold"
-                                                >
-                                                    {locale === 'zh' ? '删除' : 'Delete'}
-                                                </button>
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-slate-200">
+                                                    {labelText}
+                                                </span>
+                                                {isRecommended && (
+                                                    <span className="text-[8px] px-1.5 py-0.5 rounded-md bg-orange-500/20 text-orange-500 font-bold border border-orange-500/20">
+                                                        {locale === 'zh' ? '推荐' : 'REC'}
+                                                    </span>
+                                                )}
                                             </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between items-start mb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-slate-300">
-                                                {safeT(displayLabel, locale)}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
                                             <div className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${isSelected ? 'bg-orange-500' : 'bg-slate-700'}`}>
                                                 <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 ease-in-out ${isSelected ? 'translate-x-4' : 'translate-x-0'}`} />
                                             </div>
                                         </div>
+                                        <p className="text-[10px] text-slate-500 leading-relaxed opacity-80 group-hover:opacity-100">
+                                            {descText}
+                                        </p>
+                                        {id === 'continuity_memory' && isSelected && (
+                                            <div className="flex items-center gap-1.5 mt-2">
+                                                {/* 将橙色圆点改为更柔和的呼吸灯效果，不带具体品牌名 */}
+                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                                <span className="text-[9px] text-slate-500 font-medium uppercase tracking-tighter">
+                                                    {locale === 'zh' ? '记忆已存入本地快照' : 'Saved to local snapshot'}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 italic leading-relaxed">
-                                        "{rule.prompt.length > 50 ? rule.prompt.substring(0, 50) + '...' : rule.prompt}"
-                                    </p>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+
+                        {/* User Custom Constraints */}
+                        {customConstraints.map(rule => {
+                                const isSelected = selectedIds.includes(rule.id);
+
+                                // 动态标签查找：根据 prompt 反向查找模板，实时渲染当前语言的标签
+                                let displayLabel = rule.label;
+                                for (const category of Object.values(templates.templates)) {
+                                    const templateMatch = category.find(t => t.prompt === rule.prompt);
+                                    if (templateMatch && templateMatch.label) {
+                                        displayLabel = locale === 'zh' ? (templateMatch.label.zh || templateMatch.label.en) : templateMatch.label.en;
+                                        break;
+                                    }
+                                }
+
+                                return (
+                                    <div
+                                        key={rule.id}
+                                        onClick={() => toggleId(rule.id)}
+                                        className={`group cursor-pointer p-4 rounded-xl border border-dashed transition-all duration-200 relative ${isSelected
+                                            ? 'bg-orange-500/5 border-orange-500/30'
+                                            : 'bg-slate-800/20 border-slate-700/50 hover:border-slate-500/50'
+                                            }`}
+                                    >
+                                        {/* Hover 显现的删除按钮 */}
+                                        <button
+                                            className="absolute -top-2 -right-2 w-5 h-5 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDeleteConfirmId(rule.id);
+                                            }}
+                                        >
+                                            <Icons.X size={10} />
+                                        </button>
+
+                                        {/* 删除确认气泡 */}
+                                        {deleteConfirmId === rule.id && (
+                                            <div className="absolute right-0 top-8 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl p-3 w-48 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                <p className="text-[11px] text-slate-300 mb-3">
+                                                    {locale === 'zh' ? '确定要删除这个约束吗？' : 'Delete this constraint?'}
+                                                </p>
+                                                <div className="flex gap-2 justify-end">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteConfirmId(null);
+                                                        }}
+                                                        className="text-[10px] px-2 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                                                    >
+                                                        {locale === 'zh' ? '取消' : 'Cancel'}
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            removeCustomRule(rule.id);
+                                                            showToast(locale === 'zh' ? '已移除自定义约束' : 'Removed custom constraint');
+                                                            setDeleteConfirmId(null);
+                                                        }}
+                                                        className="text-[10px] px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition-colors font-bold"
+                                                    >
+                                                        {locale === 'zh' ? '删除' : 'Delete'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-start mb-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-slate-300">
+                                                    {safeT(displayLabel, locale)}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${isSelected ? 'bg-orange-500' : 'bg-slate-700'}`}>
+                                                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 ease-in-out ${isSelected ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 italic leading-relaxed">
+                                            "{rule.prompt.length > 50 ? rule.prompt.substring(0, 50) + '...' : rule.prompt}"
+                                        </p>
+                                    </div>
+                                );
+                            })}
 
                         {/* Empty State / Placeholder */}
                         {customConstraints.length === 0 && !isAdding && (

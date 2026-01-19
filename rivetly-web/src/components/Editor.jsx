@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from 'lucide-react';
 import { generateFinalPrompt } from '../utils/adapter-engine';
 import { processRulesOutput, handleDownload, handleExport, PLATFORMS } from '../utils/platformManager';
+import { getVsCodeApi } from '../utils/vscode';
 
 function Editor({ mode, selectedIds, customConstraints, locale, showToast }) {
     const [activePlatform, setActivePlatform] = useState('CURSOR');
