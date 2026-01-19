@@ -1,7 +1,6 @@
 name: Package Rivetly VSIX
 
 on:
-  # 手动触发逻辑
   workflow_dispatch:
     inputs:
       version_bump:
@@ -27,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # 升级到 LTS 版本
+          node-version: 20
           cache: 'npm'
 
       - name: Install Dependencies
@@ -39,19 +38,23 @@ jobs:
           npm install
           npm run build
           cd ..
-          npm run copy:dist # Ensure the built files are copied to the extension directory
+          # 【提醒】：确保 copy:dist 脚本能正确将文件放入 rivetly-extension/dist
+          npm run copy:dist 
+
+      # 新增步骤：解决 LICENSE 缺失报错
+      - name: Copy LICENSE to Extension Folder
+        run: cp LICENSE ./rivetly-extension/LICENSE
 
       - name: Setup VSCE
         run: npm install -g @vscode/vsce
 
       - name: Update Version
         if: ${{ github.event.inputs.version_bump != 'none' }}
-        working-directory: ./rivetly-extension # Versioning needs to happen in the extension directory
+        working-directory: ./rivetly-extension
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           npm version ${{ github.event.inputs.version_bump }} -m "chore: bump version to %s"
-          # Extract new version for later use
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "CURRENT_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           git push origin HEAD:main --tags
@@ -65,17 +68,21 @@ jobs:
 
       - name: Package VSIX
         working-directory: ./rivetly-extension
-        # 使用 --no-git-tag-version 避免重复打标，因为上面已经处理过版本
+        # 这里直接生成在子目录中
         run: vsce package --no-git-tag-version -o rivetly-latest.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
-        if: ${{ github.event.inputs.version_bump != 'none' }}
+        # 只有在版本更新或手动指定时才创建 Release
+        if: ${{ env.CURRENT_VERSION != '' }} 
         with:
-          files: rivetly-extension/rivetly-latest.vsix
-          tag_name: v${{ env.CURRENT_VERSION }} # 这里会自动读取 package.json 版本
+          # 【修正点】：这里的路径要相对于仓库根目录
+          files: ./rivetly-extension/rivetly-latest.vsix
+          tag_name: v${{ env.CURRENT_VERSION }}
           name: Release v${{ env.CURRENT_VERSION }}
           draft: false
           prerelease: false
+          # 生成更新日志（推荐开启，省得自己写）
+          generate_release_notes: true 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
