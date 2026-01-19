@@ -29,7 +29,7 @@
     "rules-generator",
     "rivetly"
   ],
-  "icon": "icon.svg",
+  "icon": "assets/icon.png",
   "galleryBanner": {
     "color": "#1e1e20",
     "theme": "dark"
@@ -38,6 +38,7 @@
   "main": "./extension.js",
   "scripts": {
     "vscode:prepublish": "npm run build",
+    "build": "echo 'Build skipped'",
     "package": "vsce package",
     "build:vsix": "npm run build && vsce package -o rivetly-v0.1.vsix"
   },
