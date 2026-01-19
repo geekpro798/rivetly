@@ -59,20 +59,58 @@ function activate(context) {
             webviewView.webview.html = getHtmlContent(context, webviewView.webview);
 
             // 核心交互：监听 Webview 消息
-            webviewView.webview.onDidReceiveMessage(message => {
-                if (message.command === 'webviewReady') {
-                    // 网页加载完了，现在扫描并发送旧规则
-                    syncLocalRulesToWebview(webviewView);
-                    return;
-                }
+            webviewView.webview.onDidReceiveMessage(async (message) => {
+                switch (message.command) {
+                    case 'webviewReady':
+                        // 网页加载完了，现在扫描并发送旧规则
+                        syncLocalRulesToWebview(webviewView);
+                        break;
 
-                if (message.command === 'updateRules') {
-                    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-                    if (workspaceFolder) {
-                        const filePath = path.join(workspaceFolder.uri.fsPath, message.fileName);
-                        fs.writeFileSync(filePath, message.content);
-                        vscode.window.showInformationMessage(`✅ ${message.fileName} updated!`);
-                    }
+                    case 'updateRules':
+                        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+                        if (workspaceFolder) {
+                            const filePath = path.join(workspaceFolder.uri.fsPath, message.fileName);
+                            fs.writeFileSync(filePath, message.content);
+                            vscode.window.showInformationMessage(`✅ ${message.fileName} updated!`);
+                        }
+                        break;
+
+                    case 'copyText':
+                        await vscode.env.clipboard.writeText(message.text);
+                        vscode.window.showInformationMessage('📋 Rules copied to clipboard!');
+                        break;
+
+                    case 'saveFile':
+                        const saveUri = await vscode.window.showSaveDialog({
+                            defaultUri: vscode.Uri.file(path.join(
+                                vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
+                                message.fileName
+                            )),
+                            filters: { 'AI Rules': [message.fileName.split('.').pop()] }
+                        });
+                        if (saveUri) {
+                            fs.writeFileSync(saveUri.fsPath, message.text);
+                            vscode.window.showInformationMessage(`💾 Saved to ${path.basename(saveUri.fsPath)}`);
+                        }
+                        break;
+
+                    case 'syncToRoot':
+                        const folders = vscode.workspace.workspaceFolders;
+                        if (!folders) {
+                            vscode.window.showErrorMessage('❌ No workspace folder found. Please open a project first.');
+                            return;
+                        }
+                        const rootPath = folders[0].uri.fsPath;
+                        const targetPath = path.join(rootPath, message.fileName);
+                        try {
+                            fs.writeFileSync(targetPath, message.text, 'utf8');
+                            vscode.window.showInformationMessage(`✅ Synced: ${message.fileName} is now active in your project.`);
+                            const doc = await vscode.workspace.openTextDocument(targetPath);
+                            await vscode.window.showTextDocument(doc, { preview: true });
+                        } catch (err) {
+                            vscode.window.showErrorMessage(`Sync failed: ${err.message}`);
+                        }
+                        break;
                 }
             });
         }
