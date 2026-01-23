@@ -114,7 +114,7 @@ const styles = {
 
 function App() {
   // Simple routing for auth callback
-  if (window.location.pathname === '/auth/callback') {
+  if (window.location.pathname === '/auth' || window.location.pathname === '/auth/callback') {
     return <AuthSuccess />;
   }
 

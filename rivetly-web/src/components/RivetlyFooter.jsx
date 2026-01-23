@@ -65,7 +65,7 @@ const RivetlyFooter = ({
                 options: {
                     // 核心：设置 redirect 为 Web 版的 callback 页，或者后续改为自定义协议
                     // 这里我们暂时用 Web 版的 URL 作为跳板，或者直接让扩展打开 Supabase 的 URL
-                    redirectTo: 'https://rivetly.web.app/auth/callback', 
+                    redirectTo: 'https://rivetly.vercel.app/auth', 
                     skipBrowserRedirect: true
                 }
             });

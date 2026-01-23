@@ -267,7 +267,7 @@ function activate(context) {
                         } else {
                             const projectUrl = 'https://tnjvadqapmogcsmzsokg.supabase.co';
                             const provider = message.payload.provider || 'github';
-                            const redirectTo = 'https://rivetly.web.app/auth/callback';
+                            const redirectTo = 'https://rivetly.vercel.app/auth';
                             
                             const authUrl = `${projectUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&skip_browser_redirect=true`;
                             vscode.env.openExternal(vscode.Uri.parse(authUrl));
