@@ -1,41 +1,41 @@
 import React, { useEffect, useState } from 'react';
 
 const AuthSuccess = () => {
-  const [status, setStatus] = useState('authenticating'); // authenticating | redirecting | manual
+  const [status, setStatus] = useState('authenticating');
 
   useEffect(() => {
-    // 1. 从 Hash 中提取 Token
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');
+    // Ensure we capture refresh_token as well if available
     const refreshToken = params.get('refresh_token');
+
+    // Capture env from query params for cross-IDE support
+    const queryParams = new URLSearchParams(window.location.search);
+    const targetScheme = queryParams.get('env') || 'vscode';
 
     if (accessToken) {
       setStatus('redirecting');
-      
-      // 2. 构造你的插件协议地址
-      // We include refresh_token to ensure long-lived sessions in the extension
-      const vscodeUri = `vscode://geekpro798.rivetly/auth-callback?access_token=${accessToken}&refresh_token=${refreshToken || ''}`;
+      // Dynamic URI construction based on targetScheme
+      const vscodeUri = `${targetScheme}://geekpro798.rivetly/auth-callback?access_token=${accessToken}&refresh_token=${refreshToken || ''}`;
 
-      // 3. 2秒后自动尝试唤起 VS Code（给用户一点看动画的时间）
+      console.log(`Detected target environment: ${targetScheme}, preparing redirect...`);
+
       const timer = setTimeout(() => {
         window.location.href = vscodeUri;
-        // 如果3秒后还没跳走，说明可能被浏览器拦截，显示手动按钮
         setTimeout(() => setStatus('manual'), 3000);
       }, 2000);
 
       return () => clearTimeout(timer);
-    } else {
-      setStatus('error');
     }
   }, []);
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* 动态加载动画 */}
-        <div style={styles.loader}>
-          <div style={status === 'redirecting' ? styles.innerLoaderPulse : styles.innerLoader}></div>
+        {/* 品牌橙色 Loading 动画 */}
+        <div style={styles.loaderContainer}>
+          <div style={status === 'redirecting' ? styles.loaderPulse : styles.loaderStatic}></div>
         </div>
 
         <h1 style={styles.title}>
@@ -44,62 +44,65 @@ const AuthSuccess = () => {
         
         <p style={styles.text}>
           {status === 'redirecting'
-            ? 'We are taking you back to VS Code to sync your AI rules...'
+            ? 'Returning to VS Code to sync your AI progress...'
             : 'Processing your security credentials...'}
         </p>
 
-        {/* 手动兜底按钮 */}
+        {/* 适配 Rivetly 风格的橙色按钮 */}
         {status === 'manual' && (
           <button
             onClick={() => window.location.reload()}
             style={styles.button}
           >
-            Click here to return to VS Code
+            Return to VS Code
           </button>
         )}
 
         <div style={styles.footer}>Rivetly AI • Secure Connection</div>
       </div>
       <style>{`
-        @keyframes pulse {
-          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
-          70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        @keyframes pulse-orange {
+          0% { transform: scale(0.95); opacity: 0.8; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.8; }
         }
       `}</style>
     </div>
   );
 };
 
-// --- 样式定义 (你可以根据你的品牌色调整) ---
+// --- Rivetly 品牌视觉定义 ---
 const styles = {
   container: {
     height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'Inter, sans-serif'
+    backgroundColor: '#0d1117', color: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   },
   card: {
-    textAlign: 'center', padding: '3rem', borderRadius: '1.5rem',
-    backgroundColor: '#1e293b', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-    maxWidth: '400px', width: '90%'
+    textAlign: 'center', padding: '3.5rem 2.5rem', borderRadius: '1.25rem',
+    backgroundColor: '#161b22', border: '1px solid #30363d',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.4)', maxWidth: '420px', width: '90%'
   },
-  loader: {
-    width: '60px', height: '60px', border: '3px solid #334155', borderRadius: '50%',
+  loaderContainer: {
+    width: '70px', height: '70px', border: '2px solid #30363d', borderRadius: '50%',
     margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center'
   },
-  innerLoader: {
-    width: '30px', height: '30px', backgroundColor: '#38bdf8', borderRadius: '50%',
+  loaderStatic: {
+    width: '35px', height: '35px', backgroundColor: '#ff8235', borderRadius: '50%', opacity: 0.5
   },
-  innerLoaderPulse: {
-    width: '30px', height: '30px', backgroundColor: '#38bdf8', borderRadius: '50%',
-    animation: 'pulse 1.5s infinite ease-in-out'
+  loaderPulse: {
+    width: '35px', height: '35px', backgroundColor: '#ff8235', borderRadius: '50%',
+    boxShadow: '0 0 20px rgba(255, 130, 53, 0.6)',
+    animation: 'pulse-orange 1.8s infinite ease-in-out'
   },
-  title: { fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700' },
-  text: { color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '2rem' },
+  title: { fontSize: '1.6rem', marginBottom: '1rem', fontWeight: '600', color: '#f0f6fc' },
+  text: { color: '#8b949e', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '2.5rem' },
   button: {
-    backgroundColor: '#38bdf8', color: '#0f172a', border: 'none', padding: '0.75rem 1.5rem',
-    borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s'
+    backgroundColor: '#ff8235', color: '#ffffff', border: 'none', padding: '0.8rem 2rem',
+    borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '1rem',
+    transition: 'transform 0.2s, background-color 0.2s',
+    ':hover': { backgroundColor: '#ff9a5a' }
   },
-  footer: { marginTop: '2rem', fontSize: '0.75rem', color: '#475569', letterSpacing: '0.1em' }
+  footer: { marginTop: '2.5rem', fontSize: '0.75rem', color: '#484f58', textTransform: 'uppercase', letterSpacing: '0.15em' }
 };
 
 export default AuthSuccess;

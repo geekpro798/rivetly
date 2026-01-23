@@ -2,7 +2,7 @@
   "name": "rivetly",
   "displayName": "Rivetly - AI Rules Generator",
   "description": "Professional AI rules and .cursorrules generator for Cursor, Windsurf, and Trae. Boost LLM coding quality with soulful prompts.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "SEE LICENSE IN LICENSE",
   "publisher": "geekpro798",
   "repository": {

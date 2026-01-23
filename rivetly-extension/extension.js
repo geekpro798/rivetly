@@ -267,9 +267,15 @@ function activate(context) {
                         } else {
                             const projectUrl = 'https://tnjvadqapmogcsmzsokg.supabase.co';
                             const provider = message.payload.provider || 'github';
-                            const redirectTo = 'https://rivetly.vercel.app/auth';
                             
-                            const authUrl = `${projectUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&skip_browser_redirect=true`;
+                            // 1. 自动识别当前 IDE 的协议头
+                            const currentScheme = vscode.env.uriScheme;
+                            console.log(`检测到当前 IDE 协议: ${currentScheme}`);
+                            
+                            // 2. 构造重定向到 Vercel 的地址，并带上 env 参数
+                            const redirectTo = `https://rivetly.vercel.app/auth?env=${currentScheme}`;
+                            
+                            const authUrl = `${projectUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(redirectTo)}&skip_browser_redirect=true`;
                             vscode.env.openExternal(vscode.Uri.parse(authUrl));
                         }
                         break;
