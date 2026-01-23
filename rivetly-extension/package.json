@@ -44,7 +44,7 @@
     "vscode:prepublish": "npm run build",
     "build": "echo 'Build skipped'",
     "package": "vsce package",
-    "build:vsix": "npm run build && vsce package -o rivetly-v0.1.vsix"
+    "build:vsix": "npm run build && vsce package"
   },
   "contributes": {
     "viewsContainers": {
