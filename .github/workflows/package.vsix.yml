@@ -80,8 +80,9 @@ jobs:
           files: ./rivetly-extension/*.vsix
           tag_name: v${{ env.CURRENT_VERSION }}
           name: Release v${{ env.CURRENT_VERSION }}
-          draft: false
-          prerelease: false
+          # 💡 新增下面这两行，解决 Immutable 报错
+          allow_updates: true
+          overwrite: true
           # 生成更新日志（推荐开启，省得自己写）
           generate_release_notes: true 
         env:
