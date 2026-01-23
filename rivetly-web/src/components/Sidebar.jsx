@@ -35,7 +35,8 @@ export default function Sidebar({
     isFileExist,
     isDifferent,
     previewContent,
-    currentPlatform
+    currentPlatform,
+    isCloudSyncEnabled
 }) {
     const [isAdding, setIsAdding] = React.useState(false);
     const [activeCategory, setActiveCategory] = React.useState(null);
@@ -422,17 +423,23 @@ export default function Sidebar({
                         {!isFileExist ? (
                             <>
                                 <Icons.Zap size={16} />
-                                {locale === 'zh' ? '同步配置' : 'Sync Config'}
+                                {locale === 'zh' 
+                                    ? (isCloudSyncEnabled ? '云同步配置' : '保存本地配置') 
+                                    : (isCloudSyncEnabled ? 'Sync Cloud' : 'Save Local')}
                             </>
                         ) : isDifferent ? (
                             <>
                                 <Icons.RefreshCw size={16} className="spin-icon" />
-                                {locale === 'zh' ? '更新配置' : 'Update Config'}
+                                {locale === 'zh' 
+                                    ? (isCloudSyncEnabled ? '更新云配置' : '更新本地') 
+                                    : (isCloudSyncEnabled ? 'Update Cloud' : 'Update Local')}
                             </>
                         ) : (
                             <>
                                 <Icons.Check size={16} className="text-[#4ec9b0]" />
-                                {locale === 'zh' ? '已同步' : 'Synced'}
+                                {locale === 'zh' 
+                                    ? (isCloudSyncEnabled ? '已同步' : '已保存') 
+                                    : (isCloudSyncEnabled ? 'Synced' : 'Saved')}
                             </>
                         )}
                     </button>

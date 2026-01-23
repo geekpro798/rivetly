@@ -2,6 +2,8 @@ const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
 
+const AUTH_TOKEN_KEY = 'rivetly_auth_session';
+
 function getHtmlContent(context, webview) {
     const distPath = path.join(context.extensionPath, 'dist');
     const indexPath = path.join(distPath, 'index.html');
@@ -48,9 +50,56 @@ function syncLocalRulesToWebview(webviewView) {
     }
 }
 
+// Uri Handler for vscode://geekpro798.rivetly/...
+class RivetlyUriHandler {
+    constructor(provider, context) {
+        this.provider = provider;
+        this.context = context;
+    }
+
+    async handleUri(uri) {
+        // 1. 检查路径是否是我们的回调地址
+        if (uri.path === '/auth-callback') {
+            const query = new URLSearchParams(uri.query);
+            const accessToken = query.get('access_token');
+            const refreshToken = query.get('refresh_token');
+
+            // 获取当前的 Webview (通过 Provider)
+            const webviewView = this.provider.webviewView;
+
+            if (accessToken && webviewView) {
+                // 2. 将 Token 传递给 Webview
+                webviewView.webview.postMessage({
+                    command: 'AUTH_LOGIN_SUCCESS',
+                    payload: {
+                        user: {
+                            token: accessToken,
+                            refreshToken: refreshToken
+                        }
+                    }
+                });
+
+                // 3. 持久化存储 Token
+                await this.context.globalState.update(AUTH_TOKEN_KEY, { accessToken, refreshToken });
+
+                // 4. 提示用户并把 Webview 拉到前台
+                vscode.window.showInformationMessage('✅ Rivetly: 登录成功，云端记忆已开启！');
+                webviewView.show?.(true); // 尝试聚焦 Webview
+            }
+        }
+    }
+}
+
 function activate(context) {
+    // 存储 webviewView 引用以便 Handler 访问
+    let currentWebviewView = null;
+
     const provider = {
         resolveWebviewView: (webviewView) => {
+            currentWebviewView = webviewView; // 捕获引用
+            // 将引用暴露给 Provider 对象本身，以便 Handler 访问
+            provider.webviewView = webviewView;
+
             webviewView.webview.options = {
                 enableScripts: true,
                 localResourceRoots: [context.extensionUri]
@@ -85,6 +134,60 @@ function activate(context) {
             watcher.onDidDelete(() => updateFileStatus('.cursorrules'));
             watcher.onDidChange(() => updateFileStatus('.cursorrules'));
 
+            // --- 新增：实时上下文捕获逻辑 ---
+            const sendIdeContext = () => {
+                const editor = vscode.window.activeTextEditor;
+                if (!editor) {
+                    webviewView.webview.postMessage({
+                        command: 'updateIdeContext',
+                        data: { fileName: null, lastError: null, selection: null }
+                    });
+                    return;
+                }
+
+                // 1. 获取相对路径
+                const uri = editor.document.uri;
+                const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+                const relativePath = workspaceFolder 
+                    ? path.relative(workspaceFolder.uri.fsPath, uri.fsPath) 
+                    : path.basename(uri.fsPath);
+
+                // 2. 获取选中代码片段 (前 100 字符)
+                const selection = editor.document.getText(editor.selection).slice(0, 100).trim();
+
+                // 3. 获取当前文件的第一个报错
+                const diagnostics = vscode.languages.getDiagnostics(uri);
+                const error = diagnostics.find(d => d.severity === vscode.DiagnosticSeverity.Error);
+                const lastError = error ? error.message : null;
+
+                webviewView.webview.postMessage({
+                    command: 'updateIdeContext',
+                    data: {
+                        fileName: relativePath,
+                        lastError: lastError,
+                        selection: selection || null
+                    }
+                });
+            };
+
+            // 注册 IDE 事件监听
+            const debounce = (func, wait) => {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func(...args), wait);
+                };
+            };
+            const debouncedSend = debounce(sendIdeContext, 500);
+
+            // 监听编辑器激活、选区变化、报错变化
+            context.subscriptions.push(
+                vscode.window.onDidChangeActiveTextEditor(sendIdeContext),
+                vscode.window.onDidChangeTextEditorSelection(debouncedSend),
+                vscode.languages.onDidChangeDiagnostics(debouncedSend)
+            );
+            // --- 结束 ---
+
             // 核心交互：监听 Webview 消息
             webviewView.webview.onDidReceiveMessage(async (message) => {
                 switch (message.command) {
@@ -93,6 +196,8 @@ function activate(context) {
                         syncLocalRulesToWebview(webviewView);
                         // 初始化时发送一次状态
                         updateFileStatus('.cursorrules');
+                        // 初始化发送 IDE 上下文
+                        sendIdeContext();
                         break;
                     
                     case 'checkFile':
@@ -154,6 +259,41 @@ function activate(context) {
                     case 'openLink':
                         vscode.env.openExternal(vscode.Uri.parse(message.url));
                         break;
+
+                    case 'auth-login':
+                        // ... (keep existing logic)
+                        if (message.payload && message.payload.url) {
+                            vscode.env.openExternal(vscode.Uri.parse(message.payload.url));
+                        } else {
+                            const projectUrl = 'https://tnjvadqapmogcsmzsokg.supabase.co';
+                            const provider = message.payload.provider || 'github';
+                            const redirectTo = 'https://rivetly.web.app/auth/callback';
+                            
+                            const authUrl = `${projectUrl}/auth/v1/authorize?provider=${provider}&redirect_to=${redirectTo}&skip_browser_redirect=true`;
+                            vscode.env.openExternal(vscode.Uri.parse(authUrl));
+                        }
+                        break;
+
+                    case 'CHECK_AUTH_STATUS':
+                        const savedSession = context.globalState.get(AUTH_TOKEN_KEY);
+                        if (savedSession && savedSession.accessToken) {
+                            webviewView.webview.postMessage({
+                                command: 'AUTH_LOGIN_SUCCESS',
+                                payload: {
+                                    user: {
+                                        token: savedSession.accessToken,
+                                        refreshToken: savedSession.refreshToken
+                                    }
+                                }
+                            });
+                        }
+                        break;
+
+                    case 'LOGOUT_REQUEST':
+                        await context.globalState.update(AUTH_TOKEN_KEY, undefined);
+                        webviewView.webview.postMessage({ command: 'AUTH_LOGOUT_SUCCESS' });
+                        vscode.window.showInformationMessage('已退出 Rivetly 云端连接');
+                        break;
                 }
             });
         }
@@ -162,6 +302,10 @@ function activate(context) {
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('rivetly.webviewView', provider)
     );
+
+    // 注册 UriHandler
+    const uriHandler = new RivetlyUriHandler(provider);
+    context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
     context.subscriptions.push(
         vscode.commands.registerCommand('rivetly.syncRules', () => {

@@ -4,10 +4,10 @@
   "description": "Professional AI rules and .cursorrules generator for Cursor, Windsurf, and Trae. Boost LLM coding quality with soulful prompts.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE",
-  "publisher": "rivetly",
+  "publisher": "geekpro798",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/rivetly.git"
+    "url": "https://github.com/geekpro798/rivetly.git"
   },
   "engines": {
     "vscode": "^1.75.0"
@@ -37,7 +37,8 @@
   },
   "main": "./extension.js",
   "activationEvents": [
-    "onView:rivetly.webviewView"
+    "onView:rivetly.webviewView",
+    "onUri"
   ],
   "scripts": {
     "vscode:prepublish": "npm run build",

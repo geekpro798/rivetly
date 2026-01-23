@@ -1,28 +1,39 @@
 
 let vscodeApi = null;
 
-/**
- * Singleton to get the VS Code API instance.
- * Ensures acquireVsCodeApi() is called only once.
- */
-export const getVsCodeApi = () => {
-    // If we already acquired it, return the cached instance
-    if (vscodeApi) {
-        return vscodeApi;
-    }
+// Safely acquire the VS Code API
+const acquireApi = () => {
+    if (vscodeApi) return vscodeApi;
 
-    // If we are in the VS Code webview environment
-    if (typeof window !== 'undefined' && window.acquireVsCodeApi) {
+    // Check if running in VS Code Webview environment
+    if (typeof acquireVsCodeApi !== 'undefined') {
+        try {
+            vscodeApi = acquireVsCodeApi();
+        } catch (e) {
+            console.warn("VS Code API already acquired or error acquiring:", e);
+        }
+    } 
+    // Fallback: Check window object (sometimes needed in certain bundler setups)
+    else if (typeof window !== 'undefined' && window.acquireVsCodeApi) {
         try {
             vscodeApi = window.acquireVsCodeApi();
-            return vscodeApi;
         } catch (e) {
-            // If it was already acquired elsewhere but not via this utility
-            // (unlikely if we use this utility everywhere, but good for safety)
-            console.warn("VS Code API already acquired or error acquiring:", e);
-            return null;
+            console.warn("VS Code API already acquired via window:", e);
         }
     }
 
-    return null;
+    return vscodeApi;
 };
+
+// Initialize the API instance immediately
+const vscode = acquireApi();
+
+// Export environment flags
+export const isWebview = !!vscode;
+export const isBrowser = !isWebview;
+
+// Export singleton getter (compatible with existing code)
+export const getVsCodeApi = () => vscode;
+
+// Default export
+export default vscode;

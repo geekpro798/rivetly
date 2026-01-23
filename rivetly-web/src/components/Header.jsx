@@ -1,9 +1,10 @@
 import React from 'react';
 import logoUrl from '../assets/logo.svg';
+import { isWebview } from '../utils/vscode';
 
 export default function Header({ locale, setLocale }) {
-    // 检测是否在 VS Code 插件环境下
-    const isVsCode = typeof window !== 'undefined' && !!window.acquireVsCodeApi;
+    // Check if in VS Code environment using the utility
+    const isVsCode = isWebview;
 
     return (
         <header className={`

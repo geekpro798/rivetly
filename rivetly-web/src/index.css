@@ -153,6 +153,21 @@ body.vscode-light, body.vscode-dark {
   cursor: default;
 }
 
+/* 4. 加载状态：橙色 (同步中) */
+.compact-sync-btn.loading {
+  background-color: #ff6b00;
+  color: white;
+  cursor: wait;
+  /* 加个呼吸动画 */
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
 /* 次级按钮 (Copy) */
 .secondary-icon-btn {
   background: transparent;
@@ -261,6 +276,17 @@ body.vscode-light, body.vscode-dark {
   box-shadow: 0 0 5px rgba(78, 201, 176, 0.5);
 }
 
+.status-dot.pending {
+  background-color: #ff6b00; /* 确认态橙色 */
+  box-shadow: 0 0 5px rgba(255, 107, 0, 0.5);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .footer-right {
   display: flex;
   align-items: center;
@@ -285,4 +311,72 @@ body.vscode-light, body.vscode-dark {
   color: #333;
   font-size: 10px;
   user-select: none;
+}
+
+/* Spinner for Auth Callback */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 107, 0, 0.2);
+  border-top-color: #ff6b00;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status Dot Variants */
+.status-dot.online {
+  background-color: #4ec9b0; /* Active Green */
+  box-shadow: 0 0 5px rgba(78, 201, 176, 0.5);
+}
+
+.status-dot.offline {
+  background-color: #333; /* Inactive Grey */
+  box-shadow: none;
+}
+
+/* Updated Status Dot Colors */
+.status-dot.green {
+  background-color: #4ec9b0; /* VS Code Green */
+  box-shadow: 0 0 5px rgba(78, 201, 176, 0.5);
+}
+
+.status-dot.red {
+  background-color: #f85149; /* VS Code Red */
+  box-shadow: none;
+}
+
+/* User Avatar Styling */
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.avatar-wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: filter 0.2s;
+}
+
+.avatar-wrapper:hover .user-avatar {
+  filter: brightness(1.2);
+}
+
+.sync-icon {
+  font-size: 12px;
+  opacity: 0.8;
 }
