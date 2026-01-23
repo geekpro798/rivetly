@@ -72,7 +72,7 @@ jobs:
         run: vsce package --no-git-tag-version
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         # 只有在版本更新或手动指定时才创建 Release
         if: ${{ env.CURRENT_VERSION != '' }} 
         with:
@@ -80,10 +80,8 @@ jobs:
           files: ./rivetly-extension/*.vsix
           tag_name: v${{ env.CURRENT_VERSION }}
           name: Release v${{ env.CURRENT_VERSION }}
-          # 💡 新增下面这两行，解决 Immutable 报错
-          allow_updates: true
-          overwrite: true
-          # 生成更新日志（推荐开启，省得自己写）
+          # v2 不再需要写 allow_updates，它会自动处理更新
           generate_release_notes: true 
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
