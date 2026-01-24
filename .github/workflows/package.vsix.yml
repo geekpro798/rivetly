@@ -40,6 +40,13 @@ jobs:
           cd ..
           # 【提醒】：确保 copy:dist 脚本能正确将文件放入 rivetly-extension/dist
           npm run copy:dist 
+        env:
+          # 🚀 这里的变量名必须与 vite.config.ts 中的 define 保持一致
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_R2_ENDPOINT: ${{ secrets.VITE_R2_ENDPOINT }}
+          VITE_R2_ACCESS_KEY_ID: ${{ secrets.VITE_R2_ACCESS_KEY_ID }}
+          VITE_R2_SECRET_ACCESS_KEY: ${{ secrets.VITE_R2_SECRET_ACCESS_KEY }} 
 
       # 新增步骤：解决 LICENSE 缺失报错
       - name: Copy LICENSE to Extension Folder
