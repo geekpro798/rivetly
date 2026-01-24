@@ -19,6 +19,9 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_R2_ENDPOINT': JSON.stringify(env.VITE_R2_ENDPOINT || process.env.VITE_R2_ENDPOINT),
       'import.meta.env.VITE_R2_ACCESS_KEY_ID': JSON.stringify(env.VITE_R2_ACCESS_KEY_ID || process.env.VITE_R2_ACCESS_KEY_ID),
       'import.meta.env.VITE_R2_SECRET_ACCESS_KEY': JSON.stringify(env.VITE_R2_SECRET_ACCESS_KEY || process.env.VITE_R2_SECRET_ACCESS_KEY),
+      
+      // 🚀 增加兜底：直接替换变量名字符串（非常有效）
+      'VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL),
     }
   }
 })
