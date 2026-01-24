@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# 🚀 必须添加：保护敏感配置
+.env
+.env.production
+.env.local
+.env.*.local
