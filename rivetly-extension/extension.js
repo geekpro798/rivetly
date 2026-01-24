@@ -19,6 +19,23 @@ function getHtmlContent(context, webview) {
         (match, p1, p2) => `${p1}="${baseUri}/${p2}"`
     );
 
+    // 注入配置到 Head
+    const configScript = `
+    <script>
+      window.RIVETLY_CONFIG = {
+        supabaseUrl: "${process.env.SUPABASE_URL || 'https://tnjvadqapmogcsmzsokg.supabase.co'}",
+        supabaseAnonKey: "${process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuanZhZHFhcG1vZ2NzbXpzb2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMzQxNDUsImV4cCI6MjA1MjYxMDE0NX0.D_9a95_4t3-vL-wD_5w7-z_4r3-sL-2D_5w7-z_4r3-s'}"
+      };
+    </script>
+    `;
+    
+    // 插入到 <head> 标签中，如果没有 head 则插入到 <html> 之后
+    if (html.includes('<head>')) {
+        html = html.replace('<head>', `<head>${configScript}`);
+    } else {
+        html = html.replace('<html>', `<html><head>${configScript}</head>`);
+    }
+
     return html;
 }
 
