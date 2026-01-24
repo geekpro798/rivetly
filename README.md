@@ -1,3 +1,4 @@
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/geekpro798/rivetly?color=orange&logo=github)](https://github.com/geekpro798/rivetly/releases)
 🚀 Rivetly: Professional AI Rules Generator
 Stop fighting with LLM hallucinations. Rivetly helps you generate structured, high-quality .cursorrules, .windsurfrules, and .traerules using our unique Soulful Prompt strategy.
 
